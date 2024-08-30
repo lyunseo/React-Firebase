@@ -27,36 +27,40 @@ class App extends Component {
       ]
     }
   }
+getArticles(){
+  let _title, _desc, _article = null;
+  if(this.state.mode === 'welcome'){
+    _title = this.state.welcome.title;
+    _desc = this.state.welcome.desc;
+    _article = <ReadArticle title={_title} desc={_desc} mode={this.state.mode}></ReadArticle>
+  } else if ( this.state.mode === 'read'){
 
+    let idx = this.state.menus.findIndex(item=>(item.id === this.state.selected_id));
+    let data = this.state.menus[idx];
+    _title = data.title;
+    _desc = data.desc;
+    _article = <ReadArticle title={_title} desc={_desc} mode={this.state.mode} onChangeMode={(_mode)=>{
+      this.setState({
+        mode:_mode
+      })
+    }}></ReadArticle>
+  }else if ( this.state.mode === 'create'){
+    _article = <CreateArticle onSubmit={(_title, _desc)=>{
+      this.max_menu_id += 1;
+
+      let _menus = Array.from(this.state.menus);
+      _menus.push({id: this.max_menu_id, title: _title, desc: _desc});
+        this.setState({
+        menus:_menus
+      });
+
+    }}></CreateArticle>
+  }
+  return _article;
+}
   render() {
     console.log('App 실행');
-    let _title, _desc, _article = null;
-    if(this.state.mode === 'welcome'){
-      _title = this.state.welcome.title;
-      _desc = this.state.welcome.desc;
-      _article = <ReadArticle title={_title} desc={_desc} mode={this.state.mode}></ReadArticle>
-    } else if ( this.state.mode === 'read'){
 
-      let idx = this.state.menus.findIndex(item=>(item.id === this.state.selected_id));
-      let data = this.state.menus[idx];
-      _title = data.title;
-      _desc = data.desc;
-      _article = <ReadArticle title={_title} desc={_desc} mode={this.state.mode} onChangeMode={(_mode)=>{
-        this.setState({
-          mode:_mode
-        })
-      }}></ReadArticle>
-    }else if ( this.state.mode === 'create'){
-      _article = <CreateArticle onSubmit={(_title, _desc)=>{
-        this.max_menu_id += 1;
-        let _menus = this.state.menus.concat(
-          {id: this.max_menu_id, title: _title, desc: _desc}
-        )
-        this.setState({
-          menus:_menus
-        });
-      }}></CreateArticle>
-    }
     return (
       <div className='App'>
         <Myheader 
@@ -70,20 +74,15 @@ class App extends Component {
           >
         </Myheader>
         <Mynav data={this.state.menus} onChangePage={(id)=>{
-          //debugger;
           this.setState({
             mode:'read',
             selected_id:id
           })
         }}></Mynav>
-        {/* <ReadArticle title={_title} desc={_desc} mode={this.state.mode} onChangeMode={(_mode)=>{
-          this.setState({
-            mode:_mode
-          })
-        }}></ReadArticle> */}
-        {_article}
+
+        {this.getArticles()}
         <hr/>
-    <div class="menu">
+    <div className="menu">
       <button type="button" className='primary' onClick={()=>{
         this.setState({
           mode:'create'

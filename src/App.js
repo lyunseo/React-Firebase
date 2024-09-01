@@ -4,6 +4,7 @@ import Myheader from './component/Myheader';
 import Mynav from './component/Mynav';
 import ReadArticle from './component/ReadArticle';
 import CreateArticle from './component/CreateArticle';
+import UpdateArticle from './component/UpdateArticle';
 
 class App extends Component {
   constructor(props){
@@ -17,7 +18,7 @@ class App extends Component {
         desc:'Welcome to FrontEnd'  
     },
       subject : {
-        title: "프론트엔드 개발자",
+        title: "프론트엔드 개발자 역량",
         desc : "기본언어인 html, css, javascript부터 학습합니다.",
       },
       menus : [
@@ -27,6 +28,11 @@ class App extends Component {
       ]
     }
   }
+  getReadArticle(){
+    let idx = this.state.menus.findIndex(item=>(item.id === this.state.selected_id));
+    let data = this.state.menus[idx];
+    return data;
+  }
 getArticles(){
   let _title, _desc, _article = null;
   if(this.state.mode === 'welcome'){
@@ -35,14 +41,27 @@ getArticles(){
     _article = <ReadArticle title={_title} desc={_desc} mode={this.state.mode}></ReadArticle>
   } else if ( this.state.mode === 'read'){
 
-    let idx = this.state.menus.findIndex(item=>(item.id === this.state.selected_id));
-    let data = this.state.menus[idx];
-    _title = data.title;
-    _desc = data.desc;
-    _article = <ReadArticle title={_title} desc={_desc} mode={this.state.mode} onChangeMode={(_mode)=>{
+    let _data = this.getReadArticle();
+
+    _article = <ReadArticle title={_data.title} desc={_data.desc}  
+    onChangeMode={(_mode)=>{
+      if(_mode === 'delete'){
+        if(window.confirm("정말 삭제하시겠습니까?")){
+          let _menus = Array.from(this.state.menus);
+          let idx = _menus.findIndex(item=>(item.id === this.state.selected_id));
+          console.log(idx);
+          _menus.splice(idx,1);
+          this.setState({
+            mode:'welcome',
+            menus:_menus
+          })
+        }
+      } else{
       this.setState({
         mode:_mode
       })
+    }
+
     }}></ReadArticle>
   }else if ( this.state.mode === 'create'){
     _article = <CreateArticle onSubmit={(_title, _desc)=>{
@@ -51,11 +70,32 @@ getArticles(){
       let _menus = Array.from(this.state.menus);
       _menus.push({id: this.max_menu_id, title: _title, desc: _desc});
         this.setState({
-        menus:_menus
+        menus:_menus,
+        mode: 'read',
+        selected_id:this.max_menu_id
       });
 
     }}></CreateArticle>
+  }else if ( this.state.mode === 'update'){
+    let _content = this.getReadArticle();
+
+    _article = <UpdateArticle data={_content} onSubmit={(_id, _title, _desc)=>{
+
+      let _menus = Array.from(this.state.menus);
+      _menus.forEach((item,index)=> {
+        if(item.id === _id){
+          _menus[index] = {id: _id, title:_title, desc:_desc}
+        }
+      })
+
+        this.setState({
+        menus:_menus,
+        mode:'read'
+      });
+
+    }}></UpdateArticle>
   }
+
   return _article;
 }
   render() {
